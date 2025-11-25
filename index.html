@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二十四番花信风</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --main-color: #A12F38; 
+            --bg-color: #FDFBF7;   
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: var(--bg-color);
+            overflow: hidden; 
+            width: 100vw;
+            height: 100vh;
+            cursor: default;
+        }
+
+        /* ================= 1. 开场动画 ================= */
+        #opening-scene {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #fff, #f0f0f0);
+            z-index: 9999; overflow: hidden; perspective: 1000px; 
+        }
+
+        .petal {
+            position: absolute;
+            background: linear-gradient(to bottom right, #ffc0cb, #ff9eb5);
+            width: 15px; height: 15px;
+            border-radius: 100% 0 100% 0;
+            top: -50px; opacity: 0.8; z-index: 1;
+            animation: fallDown linear infinite;
+        }
+
+        @keyframes fallDown {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.9; }
+            100% { transform: translate(100px, 110vh) rotate(720deg); opacity: 0; }
+        }
+
+        .stage-center {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+
+        /* --- 玫瑰 --- */
+        .hero-rose {
+            position: absolute;
+            left: 50%; 
+            width: 80px; 
+            margin-left: -40px; 
+            top: -150px; 
+            opacity: 1;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            animation: roseDrop 2.5s ease-out forwards, roseVanish 0.5s linear 2.5s forwards;
+        }
+
+        /* --- 手 --- */
+        .hero-hand {
+            position: absolute;
+            right: -200px; 
+            bottom: -200px;
+            width: 350px;
+            opacity: 0;
+            transform-origin: bottom right;
+            animation: handReach 1s ease-in-out 1s forwards, handRetract 3s ease-in-out 2.5s forwards;
+        }
+
+        @keyframes roseDrop {
+            0% { top: -150px; transform: rotate(-15deg); }
+            60% { top: 52%; transform: rotate(5deg); } 
+            100% { top: 50%; transform: rotate(0deg); margin-top: -40px; } 
+        }
+
+        @keyframes handReach {
+            0% { transform: translate3d(100px, 100px, 0) scale(0.8); opacity: 0; }
+            100% { transform: translate3d(-40vw, -70vh, 50px) scale(1.1); opacity: 1; } 
+        }
+
+        @keyframes roseVanish {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0); } 
+        }
+
+        @keyframes handRetract {
+            0% { transform: translate3d(-40vw, -70vh, 50px) scale(1.1); opacity: 1; }
+            100% { transform: translate3d(0, 0, 0) scale(0.8); opacity: 0; } 
+        }
+
+        /* --- 文字容器 --- */
+        .text-container {
+            position: absolute;
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex; gap: 15px;
+            z-index: 20;
+        }
+        .char {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 4.5rem; color: var(--main-color);
+            opacity: 0;
+            text-shadow: 2px 2px 5px rgba(161, 47, 56, 0.2);
+        }
+        .char.animate { animation: inkReveal 1.5s ease forwards; }
+        @keyframes inkReveal {
+            0% { opacity: 0; transform: scale(1.5); filter: blur(10px); }
+            100% { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+
+        .enter-btn {
+            position: absolute; bottom: 15%; left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 40px;
+            border: 1px solid var(--main-color);
+            color: var(--main-color); background: transparent;
+            font-family: 'Noto Serif SC'; font-size: 1.2rem;
+            cursor: pointer; opacity: 0; z-index: 100; transition: 0.3s; letter-spacing: 5px;
+        }
+        .enter-btn:hover { background: var(--main-color); color: white; }
+        .enter-show { animation: fadeInBtn 1s ease forwards; }
+        @keyframes fadeInBtn { to { opacity: 1; } }
+
+        /* --- 水墨鼠标轨迹 --- */
+        .ink-trail {
+            position: fixed; 
+            width: 10px; height: 10px; 
+            background: rgba(0,0,0,0.2); 
+            border-radius: 50%; 
+            pointer-events: none; z-index: 99999;
+            animation: inkFade 0.8s linear forwards;
+        }
+        @keyframes inkFade {
+            to { transform: scale(3); opacity: 0; }
+        }
+
+        /* ================= 2. 主体应用 ================= */
+        #main-app { display: none; opacity: 0; transition: opacity 1s; width: 100%; min-height: 100vh; overflow-y: auto; }
+        
+        header {
+            padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.9); box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 500;
+        }
+        .logo { font-family: 'Ma Shan Zheng'; font-size: 1.8rem; color: var(--main-color); }
+
+        .content-section { padding: 60px 20px; max-width: 1200px; margin: 0 auto; display: none; }
+        .content-section.active { display: block; animation: fadeUp 0.6s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sec-title {
+            font-family: 'Ma Shan Zheng'; font-size: 2.5rem; text-align: center;
+            color: var(--main-color); margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 20px;
+        }
+        
+        .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .info-box {
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; transition: 0.3s;
+            border: 1px solid transparent;
+        }
+        .info-box:hover { transform: translateY(-5px); border-color: var(--main-color); }
+        .info-box h3 { font-size: 1.5rem; margin-bottom: 15px; color: #333; }
+
+        /* 成员卡片样式调整 */
+        .members-grid { 
+            display: grid; 
+            /* 强制4列 */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 30px; 
+        }
+        
+        /* 手机端自动变2列 */
+        @media (max-width: 768px) {
+            .members-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .member-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f5f5f5; transition: transform 0.2s;}
+        .member-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        .member-photo { 
+            /* 图片高度加大到400px */
+            height: 400px; 
+            background: #eee; position: relative; overflow: hidden; 
+        }
+        .member-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .member-card:hover .member-photo img { transform: scale(1.05); }
+        
+        .member-info { padding: 15px; text-align: center; }
+        .member-name { color: var(--main-color); font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; font-family: 'Noto Serif SC'; border-bottom: 1px dashed transparent; }
+        .member-name:hover, .member-name:focus { border-bottom: 1px dashed var(--main-color); outline: none; }
+        .member-desc { font-size: 0.85rem; color: #666; }
+
+        .upload-area { border: 2px dashed #ccc; padding: 40px; text-align: center; border-radius: 10px; margin-bottom: 20px; background: #fafafa; }
+        .nav-btn { cursor: pointer; font-size: 1rem; color: #666; }
+        .nav-btn:hover { color: var(--main-color); }
+    </style>
+</head>
+<body>
+
+    <div id="opening-scene">
+        <div id="petals-wrap"></div>
+        <div class="stage-center">
+            <img src="assets/rose.png" class="hero-rose" alt="玫瑰">
+            <img src="assets/hand.png" class="hero-hand" alt="手">
+        </div>
+
+        <div class="text-container" id="title-text"></div>
+        <button class="enter-btn" id="enterBtn" onclick="enterMainSite()">进入江湖</button>
+    </div>
+
+    <div id="main-app">
+        <header>
+            <div class="logo">二十四番花信风</div>
+            <nav>
+                <span class="nav-btn" onclick="switchTab('home')">大厅</span> | 
+                <span class="nav-btn" onclick="switchTab('base')">驻地</span> | 
+                <span class="nav-btn" onclick="switchTab('members')">成员</span>
+            </nav>
+        </header>
+
+        <div id="tab-home" class="content-section active">
+            <div class="sec-title">帮派大厅</div>
+            <div style="text-align: center; margin-bottom: 50px; line-height: 2; font-size: 1.1rem;">
+                <p>风有信，花不误。<br>这里是帮派的主页介绍区域...</p>
+            </div>
+            <div class="home-grid">
+                <div class="info-box" onclick="switchTab('base')">
+                    <h3>百业驻地 &rarr;</h3>
+                    <p>查看我们的山门与风景</p>
+                </div>
+                <div class="info-box" onclick="switchTab('members')">
+                    <h3>百业成员 &rarr;</h3>
+                    <p>查看核心成员</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-base" class="content-section">
+            <div class="sec-title">百业驻地</div>
+            <div class="upload-area">
+                <h4>驻地视频展示</h4>
+                <div style="max-width: 600px; margin: 0 auto; background: #000; border-radius: 8px; overflow: hidden;">
+                    <video src="assets/video.mp4" controls style="width:100%; display:block;"></video> 
+                </div>
+            </div>
+            <div class="upload-area">
+                <h4>驻地风光</h4>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px;">
+                    <img src="https://via.placeholder.com/300x200?text=风景1" style="width:100%; border-radius:4px;">
+                    <img src="https://via.placeholder.com/300x200?text=风景2" style="width:100%; border-radius:4px;">
+                    <img src="https://via.placeholder.com/300x200?text=风景3" style="width:100%; border-radius:4px;">
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-members" class="content-section">
+            <div class="sec-title">百业成员名录</div>
+            <div class="members-grid" id="members-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 花瓣特效
+        const petalsWrap = document.getElementById('petals-wrap');
+        for(let i=0; i<60; i++){
+            let p = document.createElement('div');
+            p.className = 'petal';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            petalsWrap.appendChild(p);
+        }
+
+        // 2. 文字动画
+        const titleText = "二十四番花信风";
+        const titleContainer = document.getElementById('title-text');
+        titleText.split('').forEach(char => {
+            let span = document.createElement('div');
+            span.className = 'char';
+            span.innerText = char;
+            titleContainer.appendChild(span);
+        });
+
+        // 3. 动画时序
+        const chars = document.querySelectorAll('.char');
+        const enterBtn = document.getElementById('enterBtn');
+        setTimeout(() => {
+            chars.forEach((char, index) => {
+                setTimeout(() => { char.classList.add('animate'); }, index * 300);
+            });
+        }, 2600); 
+        setTimeout(() => { enterBtn.classList.add('enter-show'); }, 5500);
+
+        // 4. 页面切换逻辑
+        function enterMainSite() {
+            const opening = document.getElementById('opening-scene');
+            const mainApp = document.getElementById('main-app');
+            opening.style.transition = 'opacity 1s ease';
+            opening.style.opacity = 0;
+            setTimeout(() => {
+                opening.style.display = 'none';
+                mainApp.style.display = 'block';
+                document.body.style.overflow = 'auto';
+                setTimeout(() => { mainApp.style.opacity = 1; }, 50);
+            }, 1000);
+        }
+        function switchTab(tabName) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        // ==========================================
+        // 5. 成员生成逻辑 (已填入名字)
+        // ==========================================
+        
+        // ★★★ 这里是你提供的80人名单 ★★★
+        const realNames = [
+            "社主·牵丝玉男王", "副社主·吉尔普拉斯", "内陆帝國", "妻夫木聪/郁仪结璘", 
+            "索纳", "缘字决/春山逢", "闻洛舟", "江幼节", 
+            "劣威", "淋霖", "柳如烟姊妹", "柳志敏/清纯小辣椒",
+            "毛子六尺二", "娜丽阳日记/疾风怒涛之策", "南栀墨", "砵兰街阿勁",
+            "破竹尘男王", "陈烨凯", "刁剑威", "空尘寂",
+            "我是馒头", "小明小灰", "音七/道盟音", "禹星月",
+            "东方明锐", "百里月驰", "月下秋风醉雨", "郑州王安宇/木槿",
+            "咫落", "柳叶栩", "千屿鹤", "小八童养妻/上官净心",
+            "池安钦", "麟锅", "金地雄/泽思奇", "清仙",
+            "傅瑞安", "霄炼", "然空司", "卖的鸡",
+            "邓尺玉", "似历茫茫海", "宋柒佰", "病弱美熊/贺敬禹",
+            "卷白菜", "顾羲炀", "肥如酱", "墨兮成/墨兮晟",
+            "出走行", "波吉殿下在此", "聿海", "负良辰",
+            "武桃内涩/車振", "张玉玲/厚藤四郎", "余悠炀", "荆璜",
+            "昊然劉", "紡月", "执着已成云烟", "顾时夜宇",
+            "天堂之孔/岽岽", "柳猎参", "彬彬日记/万能的周彬彬", "星|枫",
+            "李治烽", "柠檬酥梨", "镜音蓮", "三胎已封鸡/东南倾",
+            "東方豆腐魚", "江志铭", "叶无梦", "豆努大王",
+            "回星猫", "柏易", "草草结了秋/世百雾", "蜡烛绮窗开",
+            "今夜不复", "鸿飞图", "顾流纭", "武大虾"
+        ];
+
+        const memberList = document.getElementById('members-list');
+        // 根据名字列表的长度自动生成数量
+        const totalMembers = realNames.length; 
+
+        for(let i=1; i<=totalMembers; i++) {
+            let div = document.createElement('div');
+            div.className = 'member-card';
+            
+            let currentName = realNames[i-1];
+            let imgSrc = `assets/(${i}).png`;
+            
+            div.innerHTML = `
+                <div class="member-photo">
+                    <img src="${imgSrc}" 
+                         alt="${currentName}" 
+                         loading="lazy" 
+                         decoding="async" 
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/300x400?text=Waiting';">
+                </div>
+                <div class="member-info">
+                    <div class="member-name" contenteditable="true">${currentName}</div>
+                    <div class="member-desc" contenteditable="true">点击编辑介绍</div>
+                </div>
+            `;
+            memberList.appendChild(div);
+        }
+
+        // --- 水墨特效 ---
+        let lastTime = 0;
+        document.addEventListener('mousemove', function(e) {
+            const now = Date.now();
+            if(now - lastTime < 50) return; 
+            lastTime = now;
+            let ink = document.createElement('div');
+            ink.className = 'ink-trail';
+            ink.style.left = e.clientX + 'px';
+            ink.style.top = e.clientY + 'px';
+            document.body.appendChild(ink);
+            setTimeout(() => ink.remove(), 800);
+        });
+    </script>
+</body>
+</html>
